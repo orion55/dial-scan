@@ -1,7 +1,7 @@
-import { Sip, SipMap } from "../types/telephony.types";
+import { Sip, SipMap, SipTrunk, SipTrunkMap } from "../types/telephony.types";
 
 export const loadSip = async (settings: string[]): Promise<SipMap> => {
-  const sipMap: SipMap = new Map<string, Sip[]>();
+  const sipTrunkMap: SipTrunkMap = new Map<string, SipTrunk[]>();
 
   /*for (const url of settings) {
     const authorLibrary = await parseBooks(url);
@@ -9,5 +9,5 @@ export const loadSip = async (settings: string[]): Promise<SipMap> => {
     booksMap.set(authorId, books);
   }*/
 
-  return sipMap;
+  return sipTrunkMap;
 };

@@ -1,14 +1,16 @@
 export type SipTrunk = {
   type: string;
   context: string;
-  isPattern: boolean;
+  isParent: boolean;
+  parent?: string;
 };
 
 export type SipUser = {
-  isPattern: boolean;
   username: string;
-  callerid: string;
+  callerId: string;
   context: string;
+  isParent: boolean;
+  parent?: string;
 };
 
 export type SipTrunkMap = Map<string, SipTrunk[]>;
