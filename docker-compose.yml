@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  redis-graph:
+    image: redislabs/redisgraph
+    container_name: redis-graph
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_graph_data:/data
+    restart: unless-stopped
+    command: ["redis-server", "--loadmodule", "/usr/lib/redis/modules/redisgraph.so"]
+
+volumes:
+  redis_graph_data:
+
