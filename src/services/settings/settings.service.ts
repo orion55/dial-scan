@@ -1,10 +1,11 @@
 import * as fs from "fs";
 import * as path from "path";
 import { getDir } from "./pathUtils";
+import { SettingsDial } from "../types/settings.types";
 
 const SETTING_FILE = "settings.json";
 
-const loadSettings = (): string[] => {
+const loadSettings = (): SettingsDial => {
   const settingDir = getDir("");
   const settingsPath = path.join(settingDir, SETTING_FILE);
 

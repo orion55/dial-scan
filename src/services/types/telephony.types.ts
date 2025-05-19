@@ -1,17 +1,32 @@
-export type SipTrunk = {
-  type: string;
-  context: string;
-  isParent: boolean;
-  parent?: string;
+type SingleField<K extends string> = K extends K ? { [P in K]: string } : never;
+
+type Relations<InKey extends string, OutKey extends string> = {
+  incoming: SingleField<InKey>[];
+  outgoing: SingleField<OutKey>[];
 };
 
-export type SipUser = {
+export type SipTrunk<InKey extends string, OutKey extends string> = {
+  type?: "friend" | "peer" | "user";
+  host: string;
+  port: number;
+  context: string;
+  relations: Relations<InKey, OutKey>;
+};
+
+export type SipUser<InKey extends string, OutKey extends string> = {
+  type?: "friend" | "peer" | "user";
   username: string;
   callerId: string;
   context: string;
-  isParent: boolean;
-  parent?: string;
+  relations: Relations<InKey, OutKey>;
 };
 
-export type SipTrunkMap = Map<string, SipTrunk[]>;
-export type SipUserMap = Map<string, SipUser[]>;
+export type SipTrunkMap<InKey extends string, OutKey extends string> = Map<
+  string,
+  SipTrunk<InKey, OutKey>
+>;
+
+export type SipUserMap<InKey extends string, OutKey extends string> = Map<
+  string,
+  SipUser<InKey, OutKey>
+>;
