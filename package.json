@@ -22,7 +22,9 @@
     "clean": "rimraf dist",
     "prepublishOnly": "npm run build",
     "run": "ncc run src/index.ts",
-    "build": "npm run clean && ncc build src/index.ts -o dist -m && npm run copy-settings"
+    "build": "npm run clean && ncc build src/index.ts -o dist -m && npm run copy-settings",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -46,6 +48,8 @@
     "cfonts": "^3.3.0",
     "cheerio": "^1.0.0",
     "dotenv": "^16.5.0",
+    "redis": "^5.0.1",
+    "redisgraph.js": "^2.3.0",
     "winston": "^3.17.0"
   }
 }
