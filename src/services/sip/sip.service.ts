@@ -1,4 +1,10 @@
-import { SipTrunkMap, SipUserMap } from "../types/telephony.types";
+import {
+  RelationItem,
+  SipTrunk,
+  SipTrunkMap,
+  SipUser,
+  SipUserMap,
+} from "../types/telephony.types";
 import { readFile } from "node:fs/promises";
 import path from "path";
 import { SettingsDial } from "../types/settings.types";
@@ -7,47 +13,91 @@ import { parseConfig } from "./parseConfig";
 import { logger } from "../logger.service";
 import { isUserSection } from "./typeSection";
 
-export const loadSip = async (
-  filename: string,
-  settings: SettingsDial,
-): Promise<unknown> => {
-  logger.info(`Читаем файл ${filename}`);
+export type SipResult = {
+  sipTrunks: Map<string, SipTrunk<"context">>;
+  sipUsers: Map<string, SipUser<"parent" | "context">>;
+};
 
-  const filePath = path.join(settings.asterisk_config, filename);
-  let text = await readFile(filePath, {
-    encoding: "utf-8",
-  });
+const HEADER_RE = /^\[([^'\]]+)](?:\(([^)]+)\))?$/;
 
-  const cleanedText = removeComments(text);
-  const parsedText = parseConfig(cleanedText);
+const buildRelations = <T extends string>(
+  includeParent: boolean,
+  context: string | undefined,
+  parentName?: string | undefined,
+): RelationItem<T>[] => {
+  const rel: RelationItem<T>[] = [];
+  if (includeParent && parentName !== undefined && parentName !== "!") {
+    rel.push({ type: "in", key: "parent" as T, value: parentName });
+  }
+  if (context) {
+    rel.push({ type: "out", key: "context" as T, value: context });
+  }
+  return rel;
+};
 
+const makeSipUser = (
+  parentName: string,
+  value: Record<string, string>,
+): SipUser<"parent" | "context"> => {
+  const { callerid, type, context } = value;
+
+  return {
+    relations: buildRelations<"parent" | "context">(true, context, parentName),
+    ...(type !== undefined && { type }),
+    ...(callerid !== undefined && { callerid }),
+    ...(context !== undefined && { context }),
+  };
+};
+
+const makeSipTrunk = (value: Record<string, string>): SipTrunk<"context"> => {
+  const { host, port, trunkname, type, context } = value;
+
+  return {
+    host,
+    relations: buildRelations<"context">(false, context),
+    ...(type !== undefined && { type }),
+    ...(port !== undefined && { port: Number(port) }),
+    ...(trunkname !== undefined && { trunkname }),
+    ...(context !== undefined && { context }),
+  };
+};
+
+const readAndClean = async (filePath: string): Promise<string> => {
+  const raw = await readFile(filePath, { encoding: "utf-8" });
+  return removeComments(raw);
+};
+
+const parseSipConfig = (text: string): SipResult => {
+  const parsed = parseConfig(text);
   const sipTrunks: SipTrunkMap<"context"> = new Map();
   const sipUsers: SipUserMap<"parent" | "context"> = new Map();
 
-  const headerRegExp = /^\[([^'\]]+)](?:\(([^)]+)\))?$/;
-
-  for (const [key, value] of parsedText.entries()) {
+  for (const [key, value] of parsed.entries()) {
     if (key === "[general]") continue;
-    // console.log(`Ключ: ${key}, Значение: ${value}`);
-    // console.log(`isUserSection: ${isUserSection(key, value)}`);
-    if (isUserSection(key, value)) {
-      const headerMatch = key.match(headerRegExp);
-      if (!headerMatch && headerMatch?.[1]) {
-        const { callerId, relations, type, context } = value;
+    const headerMatch = key.match(HEADER_RE);
+    if (!headerMatch) continue;
 
-        return {
-          callerId,
-          relations,
-          ...(type !== undefined ? { type } : {}),
-          ...(context !== undefined ? { context } : {}),
-        };
-        /*sipUsers.set(headerMatch[1], {
-          callerId: "",
-          relations: [],
-        });*/
-      }
+    const keyName = headerMatch[1];
+    if (isUserSection(key, value)) {
+      const parentName = headerMatch[2];
+      const user = makeSipUser(parentName, value);
+      sipUsers.set(keyName, user);
+    } else {
+      const trunk = makeSipTrunk(value);
+      sipTrunks.set(keyName, trunk);
     }
   }
+  return { sipTrunks, sipUsers };
+};
 
-  return undefined;
+export const loadSip = async (
+  filename: string,
+  settings: SettingsDial,
+): Promise<SipResult> => {
+  logger.info(`Читаем файл ${filename}`);
+  const filePath = path.join(settings.asterisk_config, filename);
+  const cleaned = await readAndClean(filePath);
+  const result = parseSipConfig(cleaned);
+  logger.info(`Закончили парсинг файла ${filename}`);
+  return result;
 };

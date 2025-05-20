@@ -7,7 +7,7 @@ const main = async () => {
   try {
     printGreeting();
     const settings = loadSettings();
-    await loadSip("sip.conf", settings);
+    const sipResult = await loadSip("sip.conf", settings);
   } catch (error) {
     logger.error(error);
   }

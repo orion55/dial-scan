@@ -1,21 +1,21 @@
-type RelationItem<K extends string> = {
+export type RelationItem<K extends string> = {
   type: "in" | "out";
   key: K;
   value: string;
 };
 
 export type SipTrunk<K extends string> = {
-  type?: "friend" | "peer" | "user";
+  type?: string;
   host: string;
-  port: number;
+  port?: number;
   trunkname?: string;
-  context: string;
+  context?: string;
   relations: RelationItem<K>[];
 };
 
 export type SipUser<K extends string> = {
-  type?: "friend" | "peer" | "user";
-  callerId: string;
+  type?: string;
+  callerid?: string;
   context?: string;
   relations: RelationItem<K>[];
 };
