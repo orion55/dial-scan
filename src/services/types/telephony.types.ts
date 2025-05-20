@@ -1,32 +1,25 @@
-type SingleField<K extends string> = K extends K ? { [P in K]: string } : never;
-
-type Relations<InKey extends string, OutKey extends string> = {
-  incoming: SingleField<InKey>[];
-  outgoing: SingleField<OutKey>[];
+type RelationItem<K extends string> = {
+  type: "in" | "out";
+  key: K;
+  value: string;
 };
 
-export type SipTrunk<InKey extends string, OutKey extends string> = {
+export type SipTrunk<K extends string> = {
   type?: "friend" | "peer" | "user";
   host: string;
   port: number;
   context: string;
-  relations: Relations<InKey, OutKey>;
+  relations: RelationItem<K>[];
 };
 
-export type SipUser<InKey extends string, OutKey extends string> = {
+export type SipUser<K extends string> = {
   type?: "friend" | "peer" | "user";
   username: string;
   callerId: string;
   context: string;
-  relations: Relations<InKey, OutKey>;
+  relations: RelationItem<K>[];
 };
 
-export type SipTrunkMap<InKey extends string, OutKey extends string> = Map<
-  string,
-  SipTrunk<InKey, OutKey>
->;
+export type SipTrunkMap<Key extends string> = Map<string, SipTrunk<Key>>;
 
-export type SipUserMap<InKey extends string, OutKey extends string> = Map<
-  string,
-  SipUser<InKey, OutKey>
->;
+export type SipUserMap<Key extends string> = Map<string, SipUser<Key>>;
