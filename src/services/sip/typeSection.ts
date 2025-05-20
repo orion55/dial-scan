@@ -7,8 +7,15 @@ export function isUserSection(
 ): boolean {
   const normalizedKey = key.replace(bracketWrapper, "");
 
-  return (
-    value.host === "dynamic" ||
-    (value.trunkname === undefined && !startsWithDigit.test(normalizedKey))
-  );
+  if (value.host === "dynamic") {
+    return true;
+  } else if (value.trunkname !== undefined) {
+    return false;
+  } else if (value.port !== undefined) {
+    return false;
+  } else if (startsWithDigit.test(normalizedKey)) {
+    return false;
+  } else {
+    return true;
+  }
 }

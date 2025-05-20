@@ -1,5 +1,5 @@
 import { SipTrunkMap, SipUserMap } from "../types/telephony.types";
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "path";
 import { SettingsDial } from "../types/settings.types";
 import { removeComments } from "../helpers/removeComments";
@@ -24,9 +24,29 @@ export const loadSip = async (
   const sipTrunks: SipTrunkMap<"context"> = new Map();
   const sipUsers: SipUserMap<"parent" | "context"> = new Map();
 
+  const headerRegExp = /^\[([^'\]]+)](?:\(([^)]+)\))?$/;
+
   for (const [key, value] of parsedText.entries()) {
-    console.log(`Ключ: ${key}, Значение: ${value}`);
-    console.log(`isUserSection: ${isUserSection(key, value)}`);
+    if (key === "[general]") continue;
+    // console.log(`Ключ: ${key}, Значение: ${value}`);
+    // console.log(`isUserSection: ${isUserSection(key, value)}`);
+    if (isUserSection(key, value)) {
+      const headerMatch = key.match(headerRegExp);
+      if (!headerMatch && headerMatch?.[1]) {
+        const { callerId, relations, type, context } = value;
+
+        return {
+          callerId,
+          relations,
+          ...(type !== undefined ? { type } : {}),
+          ...(context !== undefined ? { context } : {}),
+        };
+        /*sipUsers.set(headerMatch[1], {
+          callerId: "",
+          relations: [],
+        });*/
+      }
+    }
   }
 
   return undefined;

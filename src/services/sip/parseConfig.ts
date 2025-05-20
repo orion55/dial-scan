@@ -1,4 +1,4 @@
-import { headerRegex } from "./util";
+const headerRegex = /^\s*(\[[^\]]+\](?:\([^)]+\))?)\s*$/;
 
 export const parseConfig = (
   configText: string,

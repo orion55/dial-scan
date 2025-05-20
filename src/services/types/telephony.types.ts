@@ -8,15 +8,15 @@ export type SipTrunk<K extends string> = {
   type?: "friend" | "peer" | "user";
   host: string;
   port: number;
+  trunkname?: string;
   context: string;
   relations: RelationItem<K>[];
 };
 
 export type SipUser<K extends string> = {
   type?: "friend" | "peer" | "user";
-  username: string;
   callerId: string;
-  context: string;
+  context?: string;
   relations: RelationItem<K>[];
 };
 
