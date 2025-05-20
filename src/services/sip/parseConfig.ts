@@ -1,3 +1,5 @@
+import { headerRegex } from "./util";
+
 export const parseConfig = (
   configText: string,
 ): Map<string, Record<string, string>> => {
@@ -6,8 +8,6 @@ export const parseConfig = (
 
   let currentKey: string | null = null;
   let currentObj: Record<string, string> = {};
-
-  const headerRegex = /^\s*(\[[^\]]+\](?:\([^)]+\))?)\s*$/;
 
   for (const rawLine of lines) {
     const line = rawLine.trim();
