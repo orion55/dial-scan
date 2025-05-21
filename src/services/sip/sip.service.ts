@@ -8,7 +8,7 @@ import {
 import { readFile } from "node:fs/promises";
 import path from "path";
 import { SettingsDial } from "../types/settings.types";
-import { removeComments } from "../helpers/removeComments";
+import { readAndClean, removeComments } from "../helpers/removeComments";
 import { parseConfig } from "./parseConfig";
 import { logger } from "../logger.service";
 import { isUserSection } from "./typeSection";
@@ -60,11 +60,6 @@ const makeSipTrunk = (value: Record<string, string>): SipTrunk<"context"> => {
     ...(trunkname !== undefined && { trunkname }),
     ...(context !== undefined && { context }),
   };
-};
-
-const readAndClean = async (filePath: string): Promise<string> => {
-  const raw = await readFile(filePath, { encoding: "utf-8" });
-  return removeComments(raw);
 };
 
 const parseSipConfig = (text: string): SipResult => {

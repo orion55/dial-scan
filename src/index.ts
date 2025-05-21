@@ -8,16 +8,18 @@ import {
   closeGraph,
   createGraph,
 } from "./services/redis/redis.service";
+import { loadDial } from "./services/dial/dial.service";
 
 const main = async () => {
   try {
     printGreeting();
     const settings = loadSettings();
-    const sipResult = await loadSip("sip.conf", settings);
+    /*const sipResult = await loadSip("sip.conf", settings);
     const graph = await createGraph("asterisk");
     await addTrunksAndUsers(graph, sipResult);
     await addRelations(graph, sipResult);
-    closeGraph(graph);
+    closeGraph(graph);*/
+    await loadDial(["extensions.conf"], settings);
   } catch (error) {
     logger.error(error);
   }

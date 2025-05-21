@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+
 export const removeComments = (text: string): string => {
   const lines = text.split(/\r?\n/);
   const result: string[] = [];
@@ -22,4 +24,9 @@ export const removeComments = (text: string): string => {
   }
 
   return result.join("\n");
+};
+
+export const readAndClean = async (filePath: string): Promise<string> => {
+  const raw = await readFile(filePath, { encoding: "utf-8" });
+  return removeComments(raw);
 };
