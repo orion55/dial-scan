@@ -72,9 +72,9 @@ export const addRelations = async (
       if (
         relation.type === "in" &&
         relation.key === "parent" &&
-        relation.value
+        relation.target
       ) {
-        const sourceName = relation.value;
+        const sourceName = relation.target;
         const targetName = name;
         const query = `MATCH (a:SipUser {name: $sourceName}), (b:SipUser {name: $targetName})
           CREATE (a)-[r:${relation.key}]->(b)

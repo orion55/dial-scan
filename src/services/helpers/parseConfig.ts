@@ -27,11 +27,11 @@ export const parseConfig = (
       currentKey = headerMatch[1];
       currentObj = {};
     } else if (currentKey) {
-      // Параметр внутри текущей секции
-      const idx = line.indexOf("=");
-      if (idx > 0) {
-        const name = line.substring(0, idx).trim();
-        currentObj[name] = line.substring(idx + 1).trim();
+      // параметр внутри секции: name => value или name = value
+      const paramMatch = line.match(/^([^=]+?)(=>|=)(.*)$/);
+      if (paramMatch) {
+        const name = paramMatch[1].trim();
+        currentObj[name] = paramMatch[3].trim();
       }
     }
   }

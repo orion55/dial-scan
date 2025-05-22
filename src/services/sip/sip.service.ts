@@ -1,21 +1,20 @@
 import {
-  RelationItem,
+  RelationSip,
   SipTrunk,
   SipTrunkMap,
   SipUser,
   SipUserMap,
 } from "../types/telephony.types";
-import { readFile } from "node:fs/promises";
 import path from "path";
 import { SettingsDial } from "../types/settings.types";
-import { readAndClean, removeComments } from "../helpers/removeComments";
-import { parseConfig } from "./parseConfig";
+import { readAndClean } from "../helpers/prepareConfig";
+import { parseConfig } from "../helpers/parseConfig";
 import { logger } from "../logger.service";
 import { isUserSection } from "./typeSection";
 
 export type SipResult = {
-  sipTrunks: Map<string, SipTrunk<"context">>;
-  sipUsers: Map<string, SipUser<"parent" | "context">>;
+  sipTrunks: SipTrunkMap<"context">;
+  sipUsers: SipUserMap<"parent" | "context">;
 };
 
 const HEADER_RE = /^\[([^'\]]+)](?:\(([^)]+)\))?$/;
@@ -24,13 +23,17 @@ const buildRelations = <T extends string>(
   includeParent: boolean,
   context: string | undefined,
   parentName?: string | undefined,
-): RelationItem<T>[] => {
-  const rel: RelationItem<T>[] = [];
+  keyName?: string,
+): RelationSip<T>[] => {
+  const rel: RelationSip<T>[] = [];
   if (includeParent && parentName !== undefined && parentName !== "!") {
-    rel.push({ type: "in", key: "parent" as T, value: parentName });
+    rel.push({ type: "in", key: "parent" as T, target: parentName });
   }
   if (context) {
-    rel.push({ type: "out", key: "context" as T, value: context });
+    rel.push({ type: "out", key: "context" as T, target: context });
+  }
+  if (includeParent && keyName && !context) {
+    rel.push({ type: "out", key: "context" as T, target: keyName });
   }
   return rel;
 };
@@ -38,11 +41,17 @@ const buildRelations = <T extends string>(
 const makeSipUser = (
   parentName: string,
   value: Record<string, string>,
+  keyName?: string,
 ): SipUser<"parent" | "context"> => {
   const { callerid, type, context } = value;
 
   return {
-    relations: buildRelations<"parent" | "context">(true, context, parentName),
+    relations: buildRelations<"parent" | "context">(
+      true,
+      context,
+      parentName,
+      keyName,
+    ),
     ...(type !== undefined && { type }),
     ...(callerid !== undefined && { callerid }),
     ...(context !== undefined && { context }),
@@ -64,6 +73,7 @@ const makeSipTrunk = (value: Record<string, string>): SipTrunk<"context"> => {
 
 const parseSipConfig = (text: string): SipResult => {
   const parsed = parseConfig(text);
+
   const sipTrunks: SipTrunkMap<"context"> = new Map();
   const sipUsers: SipUserMap<"parent" | "context"> = new Map();
 
@@ -75,7 +85,7 @@ const parseSipConfig = (text: string): SipResult => {
     const keyName = headerMatch[1];
     if (isUserSection(key, value)) {
       const parentName = headerMatch[2];
-      const user = makeSipUser(parentName, value);
+      const user = makeSipUser(parentName, value, keyName);
       sipUsers.set(keyName, user);
     } else {
       const trunk = makeSipTrunk(value);

@@ -14,11 +14,11 @@ const main = async () => {
   try {
     printGreeting();
     const settings = loadSettings();
-    /*const sipResult = await loadSip("sip.conf", settings);
-    const graph = await createGraph("asterisk");
-    await addTrunksAndUsers(graph, sipResult);
-    await addRelations(graph, sipResult);
-    closeGraph(graph);*/
+    const sipResult = await loadSip("sip.conf", settings);
+    // const graph = await createGraph("asterisk");
+    // await addTrunksAndUsers(graph, sipResult);
+    // await addRelations(graph, sipResult);
+    // closeGraph(graph);
     await loadDial(["extensions.conf"], settings);
   } catch (error) {
     logger.error(error);
