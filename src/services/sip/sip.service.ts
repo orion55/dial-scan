@@ -8,9 +8,9 @@ import {
 import path from "path";
 import { SettingsDial } from "../types/settings.types";
 import { readAndClean } from "../helpers/prepareConfig";
-import { parseConfig } from "../helpers/parseConfig";
 import { logger } from "../logger.service";
 import { isUserSection } from "./typeSection";
+import { parseConfig } from "./parseSipConfig";
 
 export type SipResult = {
   sipTrunks: SipTrunkMap<"context">;
